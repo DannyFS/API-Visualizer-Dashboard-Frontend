@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ApiForm from './components/ApiForm';
 import ApiList from './components/ApiList';
 import ApiDetails from './components/ApiDetails';
+import DebugInfo from './components/DebugInfo';
 import apiService from './services/api';
 
 function App() {
@@ -124,6 +125,7 @@ function App() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
+        <DebugInfo />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Column */}
           <div className="space-y-6">
