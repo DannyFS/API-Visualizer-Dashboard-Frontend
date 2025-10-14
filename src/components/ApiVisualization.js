@@ -125,37 +125,63 @@ const ApiVisualization = ({ project, onRefresh }) => {
             No routes discovered yet. Click "Discover Routes" to scan the API.
           </p>
         ) : (
-          <div className="space-y-2 max-h-96 overflow-y-auto">
-            {project.routes.map((route, index) => (
-              <div
-                key={index}
-                className="border border-gray-200 rounded-lg p-3 hover:border-blue-400 transition-all"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`${getMethodColor(route.method)} text-white px-2 py-1 rounded text-xs font-bold`}
+          <div className="space-y-4 max-h-96 overflow-y-auto">
+            {Object.entries(
+              project.routes.reduce((groups, route) => {
+                // Group routes by path prefix
+                const pathParts = route.path.split('/').filter(Boolean);
+                const groupName = pathParts.length > 0 ? `/${pathParts[0]}` : '/';
+
+                if (!groups[groupName]) {
+                  groups[groupName] = [];
+                }
+                groups[groupName].push(route);
+                return groups;
+              }, {})
+            ).map(([groupName, routes]) => (
+              <div key={groupName} className="border border-gray-300 rounded-lg p-3 bg-gray-50">
+                <h4 className="font-bold text-sm text-gray-700 mb-2 flex items-center gap-2">
+                  <span className="bg-gray-700 text-white px-2 py-0.5 rounded text-xs">
+                    {groupName}
+                  </span>
+                  <span className="text-gray-500 font-normal">
+                    ({routes.length} {routes.length === 1 ? 'route' : 'routes'})
+                  </span>
+                </h4>
+                <div className="space-y-2">
+                  {routes.map((route, index) => (
+                    <div
+                      key={index}
+                      className="border border-gray-200 rounded-lg p-2 bg-white hover:border-blue-400 transition-all"
                     >
-                      {route.method}
-                    </span>
-                    <span className="font-mono text-sm">{route.path}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {route.responseTime && (
-                      <span className="text-xs text-gray-500">
-                        {route.responseTime}ms
-                      </span>
-                    )}
-                    <span className={`px-2 py-1 rounded text-xs ${getStatusColor(route.status)}`}>
-                      {route.status || 'pending'}
-                    </span>
-                  </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`${getMethodColor(route.method)} text-white px-2 py-1 rounded text-xs font-bold`}
+                          >
+                            {route.method}
+                          </span>
+                          <span className="font-mono text-xs">{route.path}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {route.responseTime && (
+                            <span className="text-xs text-gray-500">
+                              {route.responseTime}ms
+                            </span>
+                          )}
+                          <span className={`px-2 py-1 rounded text-xs ${getStatusColor(route.status)}`}>
+                            {route.status || 'pending'}
+                          </span>
+                        </div>
+                      </div>
+                      {route.lastChecked && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          Last checked: {new Date(route.lastChecked).toLocaleString()}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
-                {route.lastChecked && (
-                  <div className="text-xs text-gray-500 mt-1">
-                    Last checked: {new Date(route.lastChecked).toLocaleString()}
-                  </div>
-                )}
               </div>
             ))}
           </div>

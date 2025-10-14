@@ -16,8 +16,20 @@ const ProjectForm = ({ onProjectAdded }) => {
       return;
     }
 
+    // Auto-add https:// to API URL if not present
+    let formattedApiUrl = apiUrl.trim();
+    if (!formattedApiUrl.startsWith('http://') && !formattedApiUrl.startsWith('https://')) {
+      formattedApiUrl = 'https://' + formattedApiUrl;
+    }
+
+    // Auto-add mongodb:// or mongodb+srv:// to MongoDB URL if not present
+    let formattedMongoUrl = mongoDbUrl.trim();
+    if (!formattedMongoUrl.startsWith('mongodb://') && !formattedMongoUrl.startsWith('mongodb+srv://')) {
+      formattedMongoUrl = 'mongodb://' + formattedMongoUrl;
+    }
+
     setLoading(true);
-    await onProjectAdded(name, apiUrl, mongoDbUrl);
+    await onProjectAdded(name, formattedApiUrl, formattedMongoUrl);
     setName('');
     setApiUrl('');
     setMongoDbUrl('');

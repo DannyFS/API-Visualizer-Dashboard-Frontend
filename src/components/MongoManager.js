@@ -89,6 +89,46 @@ const MongoManager = ({ project }) => {
     }
   };
 
+  const handleEditDocument = (doc) => {
+    setEditingDoc(doc);
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      const updatedDoc = JSON.parse(JSON.stringify(editingDoc));
+      const { _id, ...updateData } = updatedDoc;
+
+      const result = await apiService.updateDocument(
+        project._id,
+        selectedDb,
+        selectedCollection,
+        { _id: _id },
+        updateData
+      );
+
+      if (result.success) {
+        alert('Document updated successfully!');
+        setEditingDoc(null);
+        loadDocuments();
+      } else {
+        alert('Failed to update document: ' + result.error);
+      }
+    } catch (error) {
+      alert('Error updating document: ' + error.message);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingDoc(null);
+  };
+
+  const handleEditFieldChange = (field, value) => {
+    setEditingDoc(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
   const handleDeleteDocument = async (docId) => {
     if (!window.confirm('Are you sure you want to delete this document?')) {
       return;
@@ -98,7 +138,7 @@ const MongoManager = ({ project }) => {
       project._id,
       selectedDb,
       selectedCollection,
-      { _id: { $oid: docId } }
+      { _id: docId }
     );
 
     if (result.success) {
@@ -223,17 +263,64 @@ const MongoManager = ({ project }) => {
               <div className="space-y-2 max-h-96 overflow-y-auto mb-4">
                 {documents.map((doc, index) => (
                   <div key={index} className="border border-gray-200 rounded-lg p-3">
-                    <div className="flex justify-between items-start">
-                      <pre className="text-xs bg-gray-50 p-2 rounded flex-1 overflow-x-auto">
-                        {JSON.stringify(doc, null, 2)}
-                      </pre>
-                      <button
-                        onClick={() => handleDeleteDocument(doc._id)}
-                        className="ml-2 text-red-500 hover:text-red-700 font-bold"
-                      >
-                        Delete
-                      </button>
-                    </div>
+                    {editingDoc && editingDoc._id === doc._id ? (
+                      // Edit Mode
+                      <div>
+                        <div className="mb-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Edit Document (JSON)
+                          </label>
+                          <textarea
+                            value={JSON.stringify(editingDoc, null, 2)}
+                            onChange={(e) => {
+                              try {
+                                const parsed = JSON.parse(e.target.value);
+                                setEditingDoc(parsed);
+                              } catch (error) {
+                                // Invalid JSON, keep as is
+                              }
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-xs"
+                            rows="8"
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleSaveEdit}
+                            className="bg-green-500 text-white px-4 py-1 rounded hover:bg-green-600 text-sm"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={handleCancelEdit}
+                            className="bg-gray-500 text-white px-4 py-1 rounded hover:bg-gray-600 text-sm"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      // View Mode
+                      <div className="flex justify-between items-start">
+                        <pre className="text-xs bg-gray-50 p-2 rounded flex-1 overflow-x-auto">
+                          {JSON.stringify(doc, null, 2)}
+                        </pre>
+                        <div className="ml-2 flex flex-col gap-1">
+                          <button
+                            onClick={() => handleEditDocument(doc)}
+                            className="text-blue-500 hover:text-blue-700 font-bold text-sm"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteDocument(doc._id)}
+                            className="text-red-500 hover:text-red-700 font-bold text-sm"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
