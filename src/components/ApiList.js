@@ -19,7 +19,7 @@ const ApiList = ({ apis, onApiClick, selectedApi, onDeleteApi }) => {
     return new Date(date).toLocaleString();
   };
 
-  if (apis.length === 0) {
+  if (!apis || apis.length === 0) {
     return (
       <div className="bg-white shadow-md rounded-lg p-6">
         <h2 className="text-2xl font-bold mb-4 text-gray-800">API List</h2>

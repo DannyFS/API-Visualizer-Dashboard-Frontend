@@ -9,6 +9,7 @@ function App() {
   const [selectedApi, setSelectedApi] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
+  const [backendConnected, setBackendConnected] = useState(true);
 
   // Load APIs on component mount
   useEffect(() => {
@@ -18,10 +19,13 @@ function App() {
   const loadApis = async () => {
     setLoading(true);
     const result = await apiService.getApis();
-    if (result.success) {
+    if (result.success && result.data && result.data.apis) {
       setApis(result.data.apis);
+      setBackendConnected(true);
     } else {
-      showNotification('Failed to load APIs: ' + result.error, 'error');
+      setApis([]);
+      setBackendConnected(false);
+      showNotification('Failed to load APIs: ' + (result.error || 'Cannot connect to backend'), 'error');
     }
     setLoading(false);
   };
@@ -95,6 +99,14 @@ function App() {
           notification.type === 'error' ? 'bg-red-500' : 'bg-blue-500'
         } text-white`}>
           {notification.message}
+        </div>
+      )}
+
+      {/* Backend Connection Warning */}
+      {!backendConnected && !loading && (
+        <div className="bg-red-600 text-white px-4 py-3 text-center">
+          <p className="font-semibold">⚠️ Cannot connect to backend server</p>
+          <p className="text-sm mt-1">Make sure the backend is running at {process.env.REACT_APP_API_URL || 'http://localhost:5000'}</p>
         </div>
       )}
 
