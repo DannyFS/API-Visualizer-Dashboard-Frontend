@@ -17,6 +17,9 @@
 .env.test.local
 .env.production.local
 
+# Allow .env.production to be tracked
+!.env.production
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
